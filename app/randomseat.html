@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Random Seat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: sans-serif;
+            /* font-size: 16px; */
+            line-height: 1.1em;
+            transition: background .5s, color .5s;
+            background: white;
+        }
+
+        body.dark {
+            background: #1e1e1e;
+            color: white;
+        }
+
+        * {
+            box-sizing: border-box;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #platform {
+            box-sizing: content-box;
+            font-size: 3vw;
+            text-align: center;
+            padding: 0;
+            height: 2em;
+            line-height: 2em;
+            width: 6em;
+            margin: .2em auto;
+            border: .1em solid black;
+            background: #e0e0e0;
+            color: black;
+        }
+
+        .seats {
+            font-size: 5vw;
+            position: relative;
+        }
+
+        .seat {
+            position: absolute;
+            background: #0097a7;
+            /* border: 1px solid black; */
+            width: 1.6em;
+            height: 1em;
+            line-height: 1em;
+            transition: background .3s;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .seat.current {
+            background: #ffd54f;
+            transition: none;
+        }
+
+        .seat.final {
+            background: #e64a19;
+            transition: none;
+        }
+
+        .seat.disabled {
+            background: #37474f;
+            transition: background .1s;
+        }
+
+        .seat.tobeselected {
+            background: hsl(199, 91%, 54%);
+            transition: background .1s;
+        }
+
+        .seat.selected {
+            background: hsl(0, 65%, 70%);
+            transition: background .1s;
+        }
+
+        .seat:hover {
+            filter: brightness(1.2);
+        }
+
+        .seat:active {
+            /* background: #cccccc;
+            transition: background .1s; */
+            filter: brightness(1.5);
+        }
+
+        .btn {
+            display: flex;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            transition: all .3s;
+            padding: .3em .5em;
+            min-width: 3em;
+            line-height: 1em;
+            /* margin: .5em; */
+            background: hsl(207, 90%, 54%);
+            color: white;
+            /* border-radius: .3em; */
+            box-shadow: 0 0 .3em gray;
+            cursor: pointer;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn.btn-down {
+            cursor: default;
+        }
+
+        .btn:hover {
+            transition: all .05s;
+            background: hsl(207, 90%, 61%);
+        }
+
+        .btn.dark {
+            background: hsl(207, 90%, 40%);
+        }
+
+        .btn.dark:hover {
+            background: hsl(207, 90%, 45%);
+        }
+
+        .btn.light {
+            background: hsl(207, 90%, 70%);
+        }
+
+        .btn.light:hover {
+            background: hsl(207, 90%, 80%);
+        }
+
+        .btn.disabled {
+            background: rgb(37, 78, 105);
+        }
+
+        .btn.disabled:hover {
+            background: rgb(66, 94, 112);
+        }
+
+        .btn.dangerous {
+            background: hsl(0, 100%, 61%)
+        }
+
+        .btn.btn.dangerous:hover {
+            background: hsl(0, 100%, 70%)
+        }
+
+        .btn.btn-down,
+        .btn:active {
+            transition: all .05s;
+            background: hsl(207, 90%, 70%);
+            /* background: darkgray; */
+            box-shadow: 0 0 .1em gray;
+        }
+
+        .btn-progress {
+            transition: opacity .3s;
+            position: absolute;
+            background: black;
+            opacity: 0;
+            bottom: 0;
+            left: 0;
+            height: .2em;
+        }
+
+        .btn-progress.btn-progress-show {
+            opacity: .3;
+        }
+
+        #ctrltoggle:hover {
+            opacity: 1 !important;
+        }
+
+        #seatctrl {
+            display: flex;
+            padding: .3em;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: sticky;
+            bottom: 0;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            margin: .6em;
+            background: #eee;
+            color: black;
+            padding: .5em .5em;
+            min-width: 10em;
+            max-width: 16em;
+            border-radius: .2em;
+            box-shadow: 2px 2px 10px gray;
+            pointer-events: initial;
+        }
+
+        .option-group-title {
+            font-size: 110%;
+            height: 1.5em;
+            font-weight: bold;
+            padding-bottom: .3em;
+            text-align: center;
+        }
+
+        .option-group-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            /* justify-content: space-around; */
+        }
+
+        .option-group-content>* {
+            margin: .15em 0;
+            /* height: 1.6em; */
+            /* line-height: 1.6em; */
+        }
+
+        .option-group-content-2 {
+            width: 20em;
+            display: flex;
+            position: relative;
+            flex: 1;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .option-group-content-2>* {
+            min-width: calc(50% - .3em);
+            flex: 1;
+            margin: .15em;
+        }
+
+        .option-row {
+            display: flex;
+            justify-content: space-between;
+            /* width: 100%; */
+            /* margin: .2em 0; */
+        }
+
+        .labeled-input input {
+            margin-left: .15em;
+            width: 5em;
+        }
+
+        .labeled-input {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+        }
+
+        .rotate,
+        .rotate-r {
+            transition: transform .5s;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-around; min-height: 100vh;">
+        <div style="overflow: hidden; padding-bottom: .2em;">
+            <div class="rotate">
+                <div class="rotate-r i18ne" id="platform">Platform</div>
+                <div class="seats" id="seats"></div>
+            </div>
+        </div>
+        <div style="position: sticky; bottom: 0;">
+            <div class="btn i18ne" style="font-size: 200%; min-width: 4em; position: sticky; bottom: 0;" onclick="doRun()">Start!</div>
+            <div id="skipAnimation" class="i18ne hidden" style="font-size: 80%; padding: .2em .3em; text-align: center;">(skip animation)</div>
+        </div>
+        <div id="seatctrl">
+            <div class="option-group">
+                <div class="option-group-title i18ne">Actions</div>
+                <div class="option-group-content">
+                    <div class="btn i18ne" onclick="siRotate.toggle()">Rotate view</div>
+                    <div class="btn i18ne" onclick="removeMode()">Remove seats...</div>
+                    <div class="btn dangerous i18ne" onclick="app.resetState()">Reset all seats</div>
+                </div>
+            </div>
+            <div class="option-group">
+                <div class="option-group-title i18ne">Layout Setting</div>
+                <div class="option-group-content">
+                    <label class="option-row labeled-input i18ne">Rows (height)<input type="number" min="1" id="seatinput-h" value="8"></label>
+                    <label class="option-row labeled-input i18ne">Columns (width)<input type="number" min="1" id="seatinput-w" value="8"></label>
+                    <label class="option-row labeled-input i18ne">Group columns<input type="number" min="1" id="seatinput-g" value="2"></label>
+                    <div class="btn dangerous i18ne" onclick="quicksetting()">Apply</div>
+                </div>
+            </div>
+            <div class="option-group">
+                <div class="option-group-title i18ne">Other Settings</div>
+                <div class="option-group-content">
+                    <div class="btn i18ne" onclick="switchLang()">Language</div>
+                    <div class="btn i18ne" id="autoDisable">Seat auto-disable</div>
+                    <div class="btn i18ne" id="runAnimation">Running animation</div>
+                    <div class="btn i18ne" id="scarier">Scarier animation</div>
+                    <div class="btn i18ne" id="soundFx">Sound FX</div>
+                    <div class="btn i18ne" id="darkTheme">Dark theme</div>
+                    <div class="btn i18ne" id="fullscreen">Fullscreen</div>
+                </div>
+            </div>
+            <div class="option-group hidden" id="removing">
+                <div class="option-group-title">Removing Seat</div>
+                <div class="option-group-content" style="max-width: 20em;">
+                    <p class="i18ne">Now click on seats that you want to remove.</p>
+                    <div class="option-row">
+                        <div class="btn" id="proceedRemove" style="margin: .15em;" onclick="removeMode()"></div>
+                        <div class="btn i18ne" id="cancelRemove" style="margin: .15em;" onclick="removeMode(true)">Cancel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn" id='ctrltoggle' style="position: fixed; left: 0; bottom: 0;" onclick="siSettingsOpen.toggle()">Toggle
+            Options</div>
+    </div>
+    <script>
+        'use strict';
+        var I18n = function () {
+            this.data = {};
+            this.curLang = 'en';
+            this.missing = new Map();
+            // { en: { key1: 'string1'} }
+        };
+        I18n.prototype.get = function (key, arg) {
+            return this.get2(key, arg) || key;
+        };
+        I18n.prototype.get2 = function (key, arg, lang) {
+            lang = lang || this.curLang;
+            var langObj = this.data[lang];
+            if (!langObj) {
+                console.log('i18n missing lang: ' + lang);
+                return undefined;
+            }
+            var r = langObj[key];
+            if (!r) {
+                if (!this.missing.has(key)) {
+                    this.missing.set(key, 1);
+                    console.log('i18n missing key: ' + key);
+                }
+            } else if (arg) {
+                for (const key in arg) {
+                    if (arg.hasOwnProperty(key)) {
+                        const val = arg[key];
+                        r = r.replace('{' + key + '}', val);
+                        // Note that it only replaces the first occurrence.
+                    }
+                }
+            }
+            return r;
+        };
+        I18n.prototype.add2dArray = function (array) {
+            const langObjs = [];
+            const langs = array[0];
+            for (const lang of langs) {
+                langObjs.push(this.data[lang] = this.data[lang] || {});
+            }
+            for (let i = 1; i < array.length; i++) {
+                const line = array[i];
+                const key = line[0];
+                for (let j = 0; j < line.length; j++) {
+                    const val = line[j];
+                    langObjs[j][key] = val;
+                }
+            }
+        };
+        I18n.prototype.renderElements = function (elements) {
+            console.log('i18n rendering');
+            elements.forEach(x => {
+                for (const node of x.childNodes) {
+                    if (node.nodeType == Node.TEXT_NODE) {
+                        // console.log('node', node);
+                        var r = this.get2(node.beforeI18n || node.textContent);
+                        if (r) {
+                            node.beforeI18n = node.beforeI18n || node.textContent;
+                            node.textContent = r;
+                        } else {
+                            if (node.beforeI18n) {
+                                node.textContent = node.beforeI18n;
+                            }
+                            console.log('missing key for node', node);
+                        }
+                    }
+                }
+            });
+        };
+        (function () {
+            var i18n = window.i18n = new I18n();
+            i18n.add2dArray([
+                ['en', 'zh', 'ja'],
+                ['Start!', '开始!', '開始!'],
+                ['(skip animation)', '(跳过动画)', '(アニメーション無し)'],
+                ['Options', '选项', 'オプション'],
+                ['Hide options', '收起选项', 'オプションを隠す'],
+                ['Platform', '讲台', null],
+                ['Layout Setting', '布局设定', 'レイアウト設定'],
+                ['Rows (height)', '行数 (高)', '行数 (全高)'],
+                ['Columns (width)', '列数 (宽)', '列数 (全幅)'],
+                ['Group columns', '分组列宽', 'グループの列数'],
+                ['Apply', '应用', '適用'],
+                ['Actions', '操作', '動作'],
+                ['Rotate view', '旋转视图', 'ビューを回転'],
+                ['Seat auto-disable', '自动禁用座位', '座席の自動オフ'],
+                ['Running animation', '启用动画', 'アニメーション'],
+                ['Remove seats...', '移除座位...', '座席を削除...'],
+                ['Reset all seats', '重置所有座位', 'すべての座席をリセット'],
+                ['Removing Seat', '移除座位', '座席を削除'],
+                ['Now click on seats that you want to remove.', '现在点击要移除的座位。', '今削除したい座席をクリックしてください。'],
+                ['Cancel', '取消', 'キャンセル'],
+                ['Remove 1 seat', '移除 1 个座位', '1 席を削除する'],
+                ['Remove {n} seats', '移除 {n} 个座位', '{n} 席を削除する'],
+                ['Other Settings', '其他设定', 'その他設定'],
+                ['Language', '语言 / Language', '言語 / Language'],
+                ['Fullscreen', '全屏模式', '全画面表示'],
+                ['Dark theme', '暗色主题', null],
+                ['Sound FX', '效果音', null],
+                ['Scarier animation', '更吓人的动画', null],
+            ]);
+            i18n.onLangChanged = null;
+            i18n.setLang = function (lang) {
+                document.documentElement.lang = lang;
+                console.log('setlang: ' + lang);
+                i18n.curLang = lang;
+                i18n.renderElements(document.querySelectorAll('.i18ne'));
+                toggleTextUpdate();
+            };
+        })();
+        // i18n.setLang('en');
+
+        var RDSeat = function (container) {
+            var RNG = function () {
+                var rngbuf = new Uint32Array(32);
+                var rngcur = 32;
+                this.getRandomInt = function () {
+                    if (rngcur == rngbuf.length) {
+                        crypto.getRandomValues(rngbuf);
+                        rngcur = 0;
+                    }
+                    var r = rngbuf[rngcur++];
+                    return r;
+                };
+            };
+            var rng = new RNG();
+            var randomOffset = function (offset) {
+                var r = rng.getRandomInt() % (offset * 2 + 1);
+                return offset - r;
+            };
+            var randomOffsetF = function (offset) {
+                return offset - Math.random() * offset * 2
+            };
+            var pointsFromRects = function (arr) {
+                const points = [];
+                for (const rect of arr) {
+                    const [x1, y1, x2, y2] = rect;
+                    for (let y = y1; y <= y2; y++) {
+                        for (let x = x1; x <= x2; x++) {
+                            points.push({ x, y });
+                        }
+                    }
+                }
+                return points;
+            };
+            // point to string
+            var pts = function (p) {
+                if (typeof (p) == 'string' || p instanceof String) return p;
+                return pts2(p.x, p.y);
+            };
+            var pts2 = function (x, y) {
+                return x + '_' + y;
+            };
+            var Seat = function (p) {
+                this.p = p;
+                this.x = p.x;
+                this.y = p.y;
+                this.pstr = pts(p);
+                this.state = null;
+                this.added = false;
+                var ele = this.ele = document.createElement('div');
+                ele.className = 'seat';
+                ele.style.left = SEATW * p.x + 'em';
+                ele.style.top = SEATH * p.y + 'em';
+                this.updateTitle();
+                ele.addEventListener('click', () => {
+                    if (this.state == TOBESELECTED) this.setState(SELECTED);
+                    else if (this.state == SELECTED) this.setState(TOBESELECTED);
+                    else this.setState(this.state == DISABLED ? null : DISABLED);
+                    thiz.onStateChanged();
+                });
+            };
+            Seat.prototype.updateTitle = function () {
+                // var str = '';
+                // // str += '(' + this.p.x + ', ' + this.p.y + ')';
+                // // if (this.state) str += ' ' + this.state;
+                // if (this.state == TOBESELECTED) str += 'Click to select.';
+                // else if (this.state == SELECTED) str += 'Click to unselect.';
+                // else str += this.state == DISABLED ? "Click to enable." : "Click to disable.";
+                // this.ele.title = str;
+            };
+            Seat.prototype.setState = function (s) {
+                if (this.state == s) return;
+                if (this.state) this.ele.classList.remove(this.state);
+                if (this.added) addStateCount(this.state, -1)
+                if (s) this.ele.classList.add(s);
+                if (this.added) addStateCount(s, +1)
+                this.state = s;
+                this.updateTitle();
+            };
+            Seat.prototype.add = function () {
+                if (this.added) return;
+                this.added = true;
+                addStateCount(this.state, +1)
+                map.set(this.pstr, this);
+                container.appendChild(this.ele);
+            };
+            Seat.prototype.remove = function () {
+                if (!this.added) return;
+                this.added = false;
+                this.idx = -1;
+                addStateCount(this.state, -1)
+                map.delete(this.pstr);
+                this.ele.remove();
+            };
+
+            // Const:
+            var CURRENT = 'current';
+            var FINAL = 'final';
+            var DISABLED = 'disabled';
+            var TOBESELECTED = 'tobeselected'
+            var SELECTED = 'selected'
+            var SEATW = 1.7, SEATH = 1.1;
+
+            var thiz = this;
+            var max = { x: 0, y: 0 };
+            var seats = []; // {Seat}
+            var map = new Map(); // maps point strings to seats
+            var stateCounters = this.stateCounters = {};
+            var addStateCount = function (state, add) {
+                if (state === null) state = 'null';
+                stateCounters[state] = (stateCounters[state] || 0) + (add || 1);
+            };
+            var getStateCount = function (state) { return stateCounters[state] || 0; }
+            var getDisables = function () { return getStateCount(DISABLED); }
+            this.getSelectedCount = function () { return getStateCount(SELECTED); }
+            var cur = null; // current / final seat
+            var curM = null; // used when there are multiple 'cur' seats
+
+            // Mode control:
+            var Modes = {
+                NORMAL: 'normal',
+                RUNNING: 'running',
+                SELECT: 'select'
+            };
+            var mode = Modes.NORMAL;
+            var onLeaveMode = null;
+            var enterMode = function (newMode, leaveAction) {
+                if (mode != Modes.NORMAL) leaveMode();
+                console.log('enter mode ' + newMode);
+                onLeaveMode = leaveAction;
+                mode = newMode;
+            };
+            var leaveMode = function (dontRaiseEvent) {
+                if (mode == Modes.NORMAL) return;
+                console.log('leave mode ' + mode);
+                if (!dontRaiseEvent) {
+                    onLeaveMode && onLeaveMode();
+                }
+                onLeaveMode = null;
+                mode = Modes.NORMAL;
+            };
+
+            this.onStateChanged = function () { };
+            this.autoDisable = true;
+            container.classList.add('seats');
+            this.setRects = function (rects) {
+                this.setSeats(pointsFromRects(rects));
+            };
+            this.setSeats = function (data) {
+                leaveMode();
+                if (!data) data = [];
+                clearSeats();
+                data.forEach(s => {
+                    this.addSeat(s);
+                });
+                this.updateSeats();
+                thiz.onStateChanged();
+            };
+            var clearSeats = function (p) {
+                seats.forEach(s => {
+                    s.remove();
+                });
+                seats = [];
+                cur = null;
+            };
+            this.getSeats = function () {
+                return seats;
+            };
+            this.addSeat = function (p) {
+                var pstr = pts(p);
+                if (map.has(pstr)) {
+                    console.warn('skipped duplicated point ' + pstr);
+                    return;
+                }
+                var seat = new Seat(p);
+                seat.add();
+                return seat;
+            };
+            this.updateSeats = function () {
+                seats = [];
+                for (var item of map.values()) {
+                    seats.push(item);
+                }
+                seats.sort(function (a, b) {
+                    if (a.y != b.y) return a.y - b.y;
+                    if (a.y % 2 == 1) return b.x - a.x;
+                    return a.x - b.x;
+                });
+                var maxX = 0, maxY = 0;
+                for (let idx = 0; idx < seats.length; idx++) {
+                    const s = seats[idx];
+                    s.idx = idx;
+                    const p = s.p;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y > maxY) maxY = p.y;
+                }
+                console.log('seats updated:', seats);
+                // console.log(views);
+                container.style.width = SEATW * (maxX + 1) + 'em';
+                container.style.height = SEATH * (maxY + 1) + 'em';
+                max.x = maxX; max.y = maxY;
+            };
+            this.setActive = function (s, final) {
+                if (cur && cur.state != DISABLED) {
+                    cur.setState(null);
+                }
+                if (s) {
+                    s.setState(final ? FINAL : CURRENT);
+                }
+                cur = s;
+            };
+            this.resetActive = function (s) {
+                leaveMode();
+                this.setActive(null);
+                this.onStateChanged();
+            };
+            this.resetState = function (s) {
+                leaveMode();
+                cur = null;
+                seats.forEach(x => x.setState(null));
+                this.onStateChanged();
+            };
+            this.setState = function (obj) {
+                leaveMode();
+                clearSeats();
+                obj.seats.forEach(x => {
+                    var seat = this.addSeat(x.p);
+                    seat.setState(x.s);
+                });
+                this.updateSeats();
+                var curIdx = obj.curIdx;
+                if (curIdx >= 0) cur = seats[curIdx];
+            };
+            this.getState = function () {
+                var obj = {
+                    curIdx: -1,
+                    seats: []
+                };
+                if (cur && cur.state == FINAL) obj.curIdx = cur.idx;
+                seats.forEach(x => {
+                    obj.seats.push({
+                        p: x.p,
+                        s: x.state != CURRENT ? x.state : null
+                    });
+                });
+                return obj;
+            };
+            this.startSelect = function (cancelled) {
+                if (mode == Modes.SELECT) return;
+                enterMode(Modes.SELECT, () => {
+                    var r = this.endSelect();
+                    cancelled && cancelled(r);
+                });
+                seats.forEach(x => {
+                    x.realState = x.state;
+                    x.setState(TOBESELECTED);
+                });
+            };
+            this.endSelect = function () {
+                if (mode != Modes.SELECT) throw new Error('Not in select mode!');
+                this.selectMode = false;
+                var selected = [];
+                seats.forEach(x => {
+                    if (x.state == SELECTED) selected.push(x);
+                    x.setState(x.realState);
+                    delete x.realState;
+                });
+                leaveMode(true);
+                return selected;
+            };
+            this.next = function (steps, final) {
+                steps = steps || 1;
+                var attempts = steps + seats.length + getDisables();
+                var curIdx = cur ? cur.idx : -1;
+                do {
+                    if (attempts-- < 0) {
+                        var msg = 'Failed to find next available seat.';
+                        alert(msg);
+                        throw new Error(msg);
+                    }
+                    if (++curIdx >= seats.length) curIdx = curIdx % seats.length;
+                } while (seats[curIdx].state == DISABLED || --steps > 0); // if it's disabled, steps won't decrease
+                this.setActive(seats[curIdx], final);
+            };
+            var genSteps = function () {
+                // return Math.floor(seats.length + Math.random() * seats.length);
+                var len = seats.length - getDisables();
+                return len + rng.getRandomInt() % len;
+            };
+
+            var SoundFX = function () {
+                var error = null;
+                var actx = null;
+                this.beep = function (final) {
+                    if (error) return;
+                    try {
+                        if (!actx) actx = new AudioContext();
+                        var curTime = actx.currentTime;
+                        var duration = (final ? .1 : .015);
+                        var gain = actx.createGain();
+                        gain.connect(actx.destination);
+                        gain.gain.setValueAtTime(0, curTime);
+                        gain.gain.setValueAtTime((final ? .15 : .1), curTime + .001);
+                        gain.gain.setValueAtTime((final ? .15 : .1), curTime + duration - .001);
+                        gain.gain.setValueAtTime(0, curTime + duration);
+                        var osc = actx.createOscillator();
+                        osc.frequency.value = final ? (784 * 2) : 784;
+                        osc.type = 'square';
+                        osc.connect(gain);
+                        osc.start(0);
+                        osc.stop(curTime + duration);
+                    } catch (e) {
+                        error = e;
+                    }
+                };
+            };
+            this.sfx = new SoundFX();
+            this.playSoundFX = false;
+            var beep = (final) => {
+                if (this.playSoundFX) this.sfx.beep(final);
+            };
+
+            this.scarier = true;
+            var running = null;
+            this.stopRun = function (keepCur) {
+                if (running !== null) {
+                    clearTimeout(running);
+                    running = null;
+                    if (!keepCur) this.setActive(null);
+                }
+            };
+            this.run = function (noAnimation) {
+                if (this.autoDisable && cur && cur.state == FINAL) {
+                    cur.setState(DISABLED);
+                }
+                if (seats.length - getDisables() <= 0) {
+                    alert('No available seat');
+                    this.onStateChanged();
+                    return;
+                }
+                var steps = genSteps();
+                console.log('running for ' + steps + ' steps');
+                if (noAnimation) {
+                    leaveMode();
+                    this.next(steps, true);
+                    this.onStateChanged();
+                    return;
+                }
+
+                if (mode != Modes.RUNNING) enterMode(Modes.RUNNING, () => this.stopRun());
+                var scarier = this.scarier;
+                var slow1 = 16;
+                var slow2 = 4;
+                if (scarier) {
+                    slow1 += randomOffset(3);
+                    slow2 = 3 + randomOffset(2);
+                }
+                console.log('slow1=' + slow1 + ' slow2=' + slow2);
+                var update = () => {
+                    steps--;
+                    if (steps > 0 || (scarier && steps == 0 && (rng.getRandomInt() % 2))) {
+                        beep(false);
+                        this.next();
+                        var timeout = 30;
+                        if (steps < slow1) {
+                            timeout *= Math.pow(1.2, slow1 - steps);
+                        }
+                        if (steps < slow2) {
+                            timeout *= Math.pow(1.2, slow2 - steps);
+                        }
+                        if (steps == 0) timeout *= .6 + randomOffsetF(.2);
+                        running = setTimeout(update, timeout);
+                    } else {
+                        beep(true);
+                        console.log("final", cur);
+                        if (steps < 0)
+                            this.setActive(cur, true);
+                        else
+                            this.next(1, true);
+                        running = null;
+                        leaveMode(true);
+                        this.onStateChanged();
+                    }
+                };
+                this.stopRun(true);
+                update();
+            };
+            this.randomnessTest = function (disable, num) {
+                if (cur && disable) cur.setState(DISABLED);
+                var steps = genSteps();
+                this.next(steps, true);
+                if (disable) {
+                    num = num || 1;
+                    cur.ele.textContent = num++;
+                } else {
+                    cur.ele.textContent -= -1;
+                }
+                setTimeout(() => this.randomnessTest(disable, num), 16);
+            };
+        };
+        var app = new RDSeat(document.getElementById('seats'));
+
+        var SettingItem = function (key, type, initial) {
+            this.key = key;
+            this.type = typeof type == 'string' ? SettingItem.types[type] : type;
+            var str = key ? localStorage.getItem(key) : null;
+            this.set(str ? this.type.deserilize(str) : initial, true);
+        };
+        SettingItem.prototype.render = function (fn, dontRaiseNow) {
+            if (!dontRaiseNow) fn(this.data);
+            var oldFn = this.onRender;
+            var newFn = fn;
+            if (oldFn) fn = function (x) { oldFn(x); newFn(x); };
+            this.onRender = fn;
+            return this;
+        };
+        SettingItem.prototype.bindToBtn = function (btn) {
+            if (this.type != SettingItem.types.bool) throw new Error('only for bool type');
+            var span = document.createElement('span');
+            btn.insertBefore(span, btn.firstChild);
+            this.render(function (x) {
+                btn.classList.toggle('disabled', !x);
+                span.textContent = x ? "✅" : "❌";
+            });
+            btn.addEventListener('click', e => this.toggle());
+            return this;
+        };
+        SettingItem.prototype.set = function (data, dontSave) {
+            this.data = data;
+            this.onRender && this.onRender(data);
+            if (!dontSave && this.key) localStorage.setItem(this.key, this.type.serialize(data));
+        };
+        SettingItem.prototype.toggle = function () {
+            if (this.type != SettingItem.types.bool) throw new Error('only for bool type');
+            this.set(!this.data);
+        };
+        SettingItem.prototype.loop = function (arr) {
+            var oldIndex = arr.findIndex(x => x == this.data);
+            var newData = arr[(oldIndex + 1) % arr.length];
+            this.set(newData);
+        };
+        SettingItem.types = {
+            bool: {
+                serialize: function (data) { return data ? 'true' : 'false'; },
+                deserilize: function (str) { return str == 'true' ? true : str == 'false' ? false : undefined; }
+            },
+            str: {
+                serialize: function (x) { return x; },
+                deserilize: function (x) { return x; }
+            }
+        };
+
+        function quicksetting() {
+            var h = document.getElementById('seatinput-h').value;
+            var w = document.getElementById('seatinput-w').value;
+            var g = document.getElementById('seatinput-g').value;
+            console.log('quick setting', { h, w, g });
+            if (g < 2) {
+                app.setRects([
+                    [0, 0, w - 1, h - 1]
+                ]);
+            } else {
+                var curx = 0;
+                var rects = [];
+                for (var i = 0; i < w; i++) {
+                    rects.push([curx, 0, curx, h - 1]);
+                    curx++;
+                    if ((i + 1) % g == 0) curx++;
+                }
+                app.setRects(rects);
+            }
+        }
+        var ctrl = document.getElementById('seatctrl');
+        var ctrltoggle = document.getElementById('ctrltoggle');
+        var siSettingsOpen = new SettingItem('settingsOpen', 'bool', true).render(function (shown) {
+            ctrl.style.display = shown ? null : 'none';
+            // if (shown) ctrl.scrollIntoView(true);
+            ctrltoggle.style.opacity = shown ? 1 : .3;
+            toggleTextUpdate();
+        });
+        function toggleTextUpdate() {
+            ctrltoggle.textContent = i18n.get(!ctrl.style.display ? "Hide options" : "Options");
+        }
+        function doRun() {
+            app.run(!siRunAnimation.data);
+        }
+        function tryResume() {
+            var c = localStorage.getItem('curState');
+            if (!c) return false;
+            app.setState(JSON.parse(c));
+            return true;
+        }
+        function saveCurrentState() {
+            console.log('saving current state');
+            localStorage.setItem('curState', JSON.stringify(app.getState()));
+        }
+        app.onStateChanged = function () {
+            if (!isRemoveMode) saveCurrentState();
+            else updateRemoveUI();
+        };
+
+        var isRemoveMode = false;
+        var proceedRemove = document.getElementById('proceedRemove');
+        var groupRemoving = document.getElementById('removing');
+        function removeMode(cancelled) {
+            if (isRemoveMode) {
+                isRemoveMode = false;
+                var seats = app.endSelect();
+                if (!cancelled) {
+                    console.log('to be removed:', seats);
+                    seats.forEach(x => x.remove());
+                    app.updateSeats();
+                    saveCurrentState();
+                }
+            } else {
+                isRemoveMode = true;
+                app.startSelect(() => {
+                    isRemoveMode = false;
+                    updateRemoveUI();
+                });
+            }
+            updateRemoveUI();
+        }
+        function updateRemoveUI() {
+            for (const ele of document.querySelectorAll('.option-group')) {
+                ele.classList.toggle('hidden', isRemoveMode ^ ele == groupRemoving);
+            }
+            document.getElementById('cancelRemove').classList.toggle('hidden', !isRemoveMode);
+            proceedRemove.classList.toggle('dangerous', isRemoveMode);
+            if (!isRemoveMode) proceedRemove.textContent = 'Remove seats';
+            else {
+                var count = app.getSelectedCount();
+                proceedRemove.style.pointerEvents = count ? null : 'none';
+                proceedRemove.style.opacity = count ? 1 : 0;
+                proceedRemove.textContent = i18n.get(count == 1 ? 'Remove 1 seat' : 'Remove {n} seats', { n: count });
+            }
+        }
+
+        var siRunAnimation = new SettingItem('runAnimation', 'bool', true)
+            .bindToBtn(document.getElementById('runAnimation'))
+            .render(function (x) {
+                document.getElementById('skipAnimation').classList.toggle('hidden', x);
+            });
+
+        var siAutoDisable = new SettingItem('autoDisable', 'bool', true)
+            .bindToBtn(document.getElementById('autoDisable'))
+            .render(function (enable) {
+                app.autoDisable = enable;
+            });
+
+        var siRotate = new SettingItem('rotate', 'bool', false).render(function (isRotated) {
+            for (const ele of document.querySelectorAll('.rotate')) {
+                ele.style.transform = isRotated ? 'rotate(180deg)' : null;
+            }
+            for (const ele of document.querySelectorAll('.rotate-r')) {
+                ele.style.transform = isRotated ? 'rotate(-180deg)' : null;
+            }
+        });
+
+        function switchLang(newLang) {
+            siLang.loop(['en', 'zh']);
+            // Not including 'ja' for now.
+        }
+
+        var siLang = new SettingItem('lang', 'str', 'en').render(function (lang) {
+            i18n.setLang(lang);
+        });
+
+        var isFullScreen = function () {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+        };
+
+        var toggleFullScreen = function (value) {
+            // if (value === undefined) {
+            //     value = !isFullScreen();
+            // }
+            if (value === isFullScreen()) return;
+            if (value) {
+                var element = document.documentElement;
+
+                // Check which implementation is available
+                var requestMethod = element.requestFullscreen ||
+                    element.webkitRequestFullscreen ||
+                    element.webkitRequestFullScreen ||
+                    element.mozRequestFullScreen ||
+                    element.msRequestFullscreen;
+
+                if (requestMethod) {
+                    requestMethod.apply(element);
+                }
+            } else {
+                (document.webkitExitFullscreen || document.mozCancelFullScreen).apply(document);
+            }
+        };
+
+        var siFullscreen = new SettingItem(null, 'bool', isFullScreen())
+        .bindToBtn(document.getElementById('fullscreen'))
+        .render(function (fs) {
+            toggleFullScreen(fs);
+        }, true);
+
+        var siDarkTheme = new SettingItem('darkTheme', 'bool', false)
+        .bindToBtn(document.getElementById('darkTheme'))
+        .render(function (val) {
+            document.body.classList.toggle('dark', val);
+        });
+
+        var siSoundFX = new SettingItem('rs-soundFx', 'bool', app.playSoundFX)
+        .bindToBtn(document.getElementById('soundFx'))
+        .render(function (val) {
+            app.playSoundFX = val;
+        });
+
+        var siSoundFX = new SettingItem('rs-scarier', 'bool', app.scarier)
+        .bindToBtn(document.getElementById('scarier'))
+        .render(function (val) {
+            app.scarier = val;
+        });
+
+        tryResume() || quicksetting();
+
+        setTimeout(function () { console.info('Welcome to dev console.'); }, 500);
+    </script>
+    <script async defer onload="sw.check(true)" src="/serviceWorker.js"></script>
+</body>
+
+</html>
