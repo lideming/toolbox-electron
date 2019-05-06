@@ -738,11 +738,16 @@
             var SoundFX = function () {
                 var error = null;
                 var actx = null;
+                var lastBeepEnd = null;
                 this.beep = function (final) {
                     if (error) return;
                     try {
                         if (!actx) actx = new AudioContext();
                         var curTime = actx.currentTime;
+                        if (lastBeepEnd !== null && curTime < lastBeepEnd) {
+                            console.log('skipped a beep (' + final + ')');
+                            return;
+                        }
                         var duration = (final ? .1 : .015);
                         var gain = actx.createGain();
                         gain.connect(actx.destination);
@@ -755,7 +760,7 @@
                         osc.type = 'square';
                         osc.connect(gain);
                         osc.start(0);
-                        osc.stop(curTime + duration);
+                        osc.stop(lastBeepEnd = curTime + duration);
                     } catch (e) {
                         error = e;
                     }

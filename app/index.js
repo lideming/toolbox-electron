@@ -15,6 +15,7 @@ const args = process.argv.slice(2);
 
 const fullscreenMode = args.includes('f');
 const loadOnline = args.includes('o');
+const startHidden = args.includes('h');
 
 function createWindow() {
   // Create the browser window.
@@ -87,7 +88,7 @@ app.on('ready', () => {
   createWindow();
   // dialog.showMessageBox({type: 'info', title: 'Application started' , message: 'Click on OK to dismiss this hint,\nthen press the shortcut (Ctrl + L) to show/hide the main window.'});
   globalShortcut.register('Ctrl+L', () => toggleHidden());
-  if (args.includes('h')) toggleHidden(true);
+  if (startHidden) toggleHidden(true);
 });
 
 // Quit when all windows are closed.
