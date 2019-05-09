@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Random Number Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            text-align: center;
+            font-family: sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+        .config-item {
+            margin: .2rem auto;
+            max-width: 15em;
+        }
+        .config-edit {
+            width: 7em;
+        }
+        .config-label-edit {
+            display: inline-block;
+            width: 5em;
+            text-align: right;
+        }
+        .config-label-cb {
+            transition: color .2s;
+        }
+        .config-label-cb:hover {
+            color: #00aeff;
+        }
+        .num-index {
+            display: block;
+            position: absolute;
+            left: 0;
+            opacity: .5;
+        }
+        .hide-index > .num-index {
+            display: none;
+        }
+        #btn-gen {
+            font-size: 200%;
+            margin-bottom: .5em;
+        }
+        #number {
+            position: relative;
+            max-width: 10em;
+            margin-left: auto;
+            margin-right: auto;
+            user-select: text;
+            -webkit-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .btn {
+            display: flex;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            transition: all .3s;
+            padding: .3em;
+            min-width: 3em;
+            line-height: 1em;
+            /* margin: .5em; */
+            background: #2196F3;
+            color: white;
+            /* border-radius: .3em; */
+            box-shadow: 0 0 .3em gray;
+            cursor: pointer;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn.inline {
+            display: inline-flex;
+        }
+
+        .btn.btn-down {
+            cursor: default;
+        }
+
+        .btn:hover {
+            transition: all .05s;
+            background: rgb(50, 173, 255);
+        }
+
+        .btn.btn-down,
+        .btn:active {
+            transition: all .05s;
+            background: rgb(0, 225, 255);
+            /* background: darkgray; */
+            box-shadow: 0 0 .1em gray;
+        }
+
+        .btn-progress {
+            transition: opacity .3s;
+            position: absolute;
+            background: black;
+            opacity: 0;
+            bottom: 0;
+            left: 0;
+            height: .2em;
+        }
+
+        .btn-progress.btn-progress-show {
+            opacity: .5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Random Number Generator</h1>
+    <h2 id="number">(This webpage needs JavaScript to function.)</h2>
+    <div id="btn-gen" class="btn inline" style="padding: .3em 1em;" onclick="generate()">Generate</div>
+    <div class="config-item"><label class="config-label-edit">Count:</label>
+        <input class="config-edit" id="input-count" type="number" value="1"></div>
+    <div class="config-item"><label class="config-label-edit">Min:</label>
+        <input class="config-edit" id="input-min" type="number" value="1"></div>
+    <div class="config-item"><label class="config-label-edit">Max:</label>
+        <input class="config-edit" id="input-max" type="number" value="100"></div>
+    <div class="config-item"><label class="config-label-cb"><input id="input-index" type="checkbox" onclick="checkIndex()"> Index</label></div>
+    <div class="config-item"><label class="config-label-cb"><input id="input-sort" type="checkbox"> Sorting</label></div>
+    <div class="config-item"><label class="config-label-cb"><input id="input-nodup" type="checkbox"> No duplicates<br>(when count > 1)</label></div>
+    <script>
+        function generate() {
+            var count = +document.getElementById('input-count').value;
+            var min = +document.getElementById('input-min').value;
+            var max = +document.getElementById('input-max').value;
+            var nodup = !!document.getElementById('input-nodup').checked;
+            var sort = !!document.getElementById('input-sort').checked;
+            var rangeSize = max - min + 1;
+            var result = "";
+            if (count <= 0) {
+                result = "E: Wrong count";
+            } else if (rangeSize <= 0) {
+                result = "E: Wrong range";
+            } else if (nodup && rangeSize < count) {
+                result = "E: NoDup & range < count";
+            } else {
+                var results = generateCore(min, rangeSize, count, nodup, sort);
+                console.log('Result at ' + new Date(), results);
+                for (let i = 0; i < results.length; i++) {
+                    const r = results[i];
+                    result += '<span class="num-index">[' + (i + 1) + ']</span>' + r + '<br>';
+                }
+            }
+            document.getElementById('number').innerHTML = result;
+        }
+        function generateCore(min, rangeSize, count, nodup, sort) {
+            var results = [];
+            for (let i = 0; i < count; i++) {
+                do {
+                    var r = Math.floor(Math.random() * rangeSize) + min;
+                    var again = false;
+                    if (nodup) {
+                        for (let ri = 0; ri < results.length; ri++) {
+                            if (results[ri] == r) {
+                                again = true;
+                                break;
+                            }
+                        }
+                    }
+                } while (again);
+                results.push(r);
+            }
+            if (sort) {
+                results.sort(function (a, b) {
+                    return a - b;
+                });
+            }
+            return results;
+        }
+        function checkIndex() {
+            var index = !document.getElementById('input-index').checked;
+            var cl = document.getElementById('number').classList;
+            if (index) {
+                cl.add("hide-index");
+            } else {
+                cl.remove("hide-index");
+            }
+        }
+        checkIndex();
+        generate();
+    </script>
+</body>
+</html>

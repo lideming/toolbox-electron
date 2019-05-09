@@ -1,1 +1,0 @@
-@start electron\Electron.exe app f

@@ -1,0 +1,114 @@
+<html>
+
+<head>
+    <title>Toolbox</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            background: #f3f3f3;
+        }
+
+        .btn {
+            display: flex;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            transition: all .3s;
+            padding: .3em .5em;
+            min-width: 3em;
+            line-height: 1em;
+            /* margin: .5em; */
+            background: hsl(207, 90%, 54%);
+            color: white;
+            /* border-radius: .3em; */
+            box-shadow: 0 0 .3em gray;
+            cursor: pointer;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transition: all .05s;
+            background: hsl(207, 90%, 61%);
+        }
+
+        .btn.btn-down {
+            cursor: default;
+        }
+
+        .btn.btn-down,
+        .btn:active {
+            transition: all .05s;
+            background: hsl(207, 90%, 70%);
+            box-shadow: 0 0 .1em gray;
+        }
+
+        .btn.dangerous {
+            background: hsl(0, 100%, 61%)
+        }
+
+        .btn.btn.dangerous:hover {
+            background: hsl(0, 100%, 70%)
+        }
+
+        .bar {
+            display: flex;
+        }
+
+        .bar .btn {
+            margin: .3em;
+            padding: .5em;
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bar">
+        <div class="btn" onclick="shared.openSeat(false)">Random Seat Selector</div>
+    </div>
+    <div class="bar">
+        <div class="btn" style="margin-bottom: .1em" onclick="shared.openSeat(true); minimize();">Random Seat Selector (Fullscreen)</div>
+    </div>
+    <div style="font-size: 70%; text-align: center;">(Use shortcut "Ctrl + L" to show/hide the Random Seat Selector.)</div>
+    <div class="bar">
+        <div class="btn" onclick="shared.openNamedPage('rng.html')">Random Number Generator</div>
+    </div>
+    <div class="bar">
+        <div class="btn" onclick="shared.openNamedPage('countdown.html')">Countdown Timer</div>
+    </div>
+    <div style="flex: 1;"></div>
+    <div id="version" style="font-size: 70%; text-align: center;"></div>
+    <div class="bar">
+        <div class="btn dangerous" onclick="quitApp()">Quit App</div>
+    </div>
+    <script>
+        remote = require('electron').remote;
+        shared = remote.getGlobal('shared');
+
+        function minimize () {
+            remote.getCurrentWindow().minimize();
+        }
+
+        function quitApp () {
+            shared.quit();
+            remote.getCurrentWindow().destroy();
+        }
+
+        document.getElementById('version').textContent = `(Running on Node.js ${ process.versions.node },
+        Chromium ${ process.versions.chrome },
+        and Electron ${ process.versions.electron })`;
+    </script>
+</body>
+
+</html>

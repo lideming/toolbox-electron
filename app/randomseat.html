@@ -119,13 +119,20 @@
             overflow: hidden;
         }
 
+        .btn:hover {
+            transition: all .05s;
+            background: hsl(207, 90%, 61%);
+        }
+
         .btn.btn-down {
             cursor: default;
         }
 
-        .btn:hover {
+        .btn.btn-down,
+        .btn:active {
             transition: all .05s;
-            background: hsl(207, 90%, 61%);
+            background: hsl(207, 90%, 70%);
+            box-shadow: 0 0 .1em gray;
         }
 
         .btn.dark {
@@ -158,14 +165,6 @@
 
         .btn.btn.dangerous:hover {
             background: hsl(0, 100%, 70%)
-        }
-
-        .btn.btn-down,
-        .btn:active {
-            transition: all .05s;
-            background: hsl(207, 90%, 70%);
-            /* background: darkgray; */
-            box-shadow: 0 0 .1em gray;
         }
 
         .btn-progress {
@@ -1073,7 +1072,6 @@
 
         setTimeout(function () { console.info('Welcome to dev console.'); }, 500);
     </script>
-    <script async defer onload="sw.check(true)" src="/serviceWorker.js"></script>
 </body>
 
 </html>
